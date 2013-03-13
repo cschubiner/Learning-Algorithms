@@ -6,21 +6,26 @@ import org.junit.Test;
 public class AlgorithmTest {
 
 	@Test
+	public void harryTest() {
+		testAlgorithm(new DataModel("harry-potter-train.txt"), new DataModel("harry-potter-test.txt"));
+	}
+	
+	@Test
 	public void simpleTest() {
 		testAlgorithm(new DataModel("simple-train.txt"), new DataModel("simple-test.txt"));
 	}
 	
 	@Test
-	public void voteTest() {
+	public void heartTest() {
 		testAlgorithm(new DataModel("heart-train.txt"), new DataModel("heart-test.txt"));
 	}
 	
 	@Test
-	public void heartTest() {
+	public void voteTest() {
 		testAlgorithm(new DataModel("vote-train.txt"), new DataModel("vote-test.txt"));
 	}
 
-	private void testAlgorithm(DataModel trainingModel, DataModel testingModel) {
+	public void testAlgorithm(DataModel trainingModel, DataModel testingModel) {
 		int[] correctCount = new int[2];
 		int[] totalCount = new int[2];
 		for (int i = 0; i < testingModel.getNumDataVectors(); i++){
