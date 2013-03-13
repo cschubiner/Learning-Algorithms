@@ -47,7 +47,4 @@ public class AlgorithmTest {
 		System.out.println("Accuracy = "+ accuracy);
 		System.out.println();
 	}
-
-
-
 }

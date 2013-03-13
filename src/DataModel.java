@@ -3,7 +3,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
 public class DataModel {
 
 	private ArrayList<DataVector> dataArray = new ArrayList<DataVector>(); 
@@ -42,14 +41,72 @@ public class DataModel {
 		}
 		return count;
 	}
+	
+	double calculateGradientPart(double[] betas, ArrayList<Integer> vector){
+		double z = 0;
+		for (int j = 0; j < vector.size(); j++){
+			z += betas[j]*vector.get(j);
+		}
+		return 1.0/(1+Math.exp(-z));
+	}
 
-	public int predictDataClass(ArrayList<Integer> vector){
-		final boolean laPlace = true;
+	
+	double calculateGradient(double[] betas, ArrayList<Integer> vector, int y){
+		return (double)y - calculateGradientPart(betas, vector);
+	}
+	
+	double[] betas = null;
+	
+	public int predictDataClass(ArrayList<Integer> vector2){
+		if (m == null) m = vector2.size()+1;
+		
+		ArrayList<Integer> vector = new ArrayList<Integer>();
+		vector.add(1);
+		for (int i = 0; i < vector2.size(); i++)
+			vector.add(vector2.get(i));
+		
+		if (betas == null){
+			betas = calculateBetas();
+		}
+		return (calculateGradientPart(betas, vector) > .5 ? 1 : 0);
+	}
+
+	Integer m;
+	final int epochs = 10000;
+	final double learning_rate = 0.0001;
+
+	private double[] calculateBetas() {
+		double[] betas = new double[m];
+		double[] gradient = new double[m];
+		
+		for (int i = 0; i < epochs; i++) {
+			for (int j = 0; j < m; j++) 
+				gradient[j] = 0;
+			// Compute "batch" gradient vector
+			
+			for (DataVector dv : dataArray){
+				// Add contribution to gradient for each data point
+				
+				for (int j = 0; j < m; j++) {
+					gradient[j]  += (double)dv.getDataVectorWithOne().get(j)*calculateGradient(betas, dv.getDataVectorWithOne(), dv.getDataClass());
+				}
+			}
+			
+			// Update all j. Note learning rate h is pre-set constant
+			for (int j = 0; j < m; j++) {
+				betas[j] += learning_rate * gradient[j];
+			}
+		}
+		return betas;
+	}
+
+	public int predictDataClassMLE(ArrayList<Integer> vector){
+		final boolean laPlace = false;
 		
 		ArrayList<double[][]> matrices = new ArrayList<double[][]>();
 
 		for (int i = 0; i < vector.size(); i++){
-			double[][] counts = new double[2][vector.size()];
+			double[][] counts = new double[2][2];
 			int total = 0;
 			for (int y = 0; y < counts.length; y++){
 				for(int x = 0; x < counts[0].length; x++){
@@ -68,9 +125,6 @@ public class DataModel {
 				}
 			}
 
-			System.out.println("counts:" + counts[0][0] + ", "+counts[0][1]);
-			System.out.println("counts:" + counts[1][0] + ", "+counts[1][1]);
-			System.out.println();
 			matrices.add(counts);
 		}
 
@@ -82,18 +136,9 @@ public class DataModel {
 			}
 		}
 
-		//	totalCounts[0] = countsForOne[0] + countsForZero[0];
-		//totalCounts[1] = countsForOne[1] + countsForZero[1];
-		//System.out.println("yCounts:" + yCounts[0] + ", "+yCounts[1]);
-
 		double prob0 = probabilityOfY(vector, matrices, 0, yCounts);
 		double prob1 = probabilityOfY(vector, matrices, 1, yCounts);
-	//	System.out.println("prob 0: " + prob0);
-		//System.out.println("prob 1: " + prob1);
-		
-		
 		return (prob0 > prob1 ? 0 : 1);
-
 	}
 
 	private double probabilityOfY(ArrayList<Integer> vector,
